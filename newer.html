@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spinning Wheel</title>
+    <style>
+        /* Set the background color and remove margins */
+        body {
+            background-color: rgb(26, 218, 228);
+            margin: 0; 
+            overflow: hidden;
+        }
+        #currenttime {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 120px;
+            height: 30px;
+            line-height: 30px;
+            font-size: 20px;
+            color: white;
+            text-align: center;
+            padding: 5px;
+            border: 1px solid black;
+            border-radius: 5px;
+            box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.3);
+            background: linear-gradient(to right, blue, purple);
+        }
+        #timer {
+            position: absolute;
+            top: 60px;
+            right: 40px;
+            width: 50px;
+            height: 50px;
+            line-height: 50px;
+            border-radius: 50%;
+            background-color: #f3f3f3;
+            border: 4px solid #4CAF50;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            display: none; /* Hide the timer initially */
+            animation: countdown 30s linear forwards;
+        }
+
+        @keyframes countdown {
+            from {background-color: #f3f3f3;}
+            to {background-color: #FF0000;}
+        }
+
+        canvas {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="currenttime"></div>
+        <div id="timer" class="timer-text"></div>
+    <!-- The canvas for drawing the wheels -->
+    <canvas id="myCanvas" width="1540" height="700" style="border:1px solid #d3d3d3;">
+        Your browser does not support the HTML5 canvas tag.
+    </canvas>
+
+    <!-- Spin button -->
+    <button id="spinButton" style="font-size: 20px; padding: 10px 20px;">Spin Fast!</button>
+
+    <!-- Information display -->
+    <div id="info"></div>
+
+    <!-- Output displays for the wheels -->
+    <input type="text" id="wheel1Output" readonly>
+    <input type="text" id="wheel2Output" readonly>
+    <input type="text" id="wheel3Output" readonly>
+
+    <!-- Table for displaying additional information -->
+    <table id="myTable" border="1" style="width: 80%; height: 100px;">
+        <tr>
+            <td>players</td>
+            <td>playing</td>
+            <td>order</td>
+            <td>jote</td>
+            <td>win</td>
+        </tr>
+        <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+    </table>
+
+    <script>
+        function displayTime() {
+        var date = new Date();
+        var options = { timeZone: 'Africa/Addis_Ababa', hour: '2-digit', minute: '2-digit'};
+        var formatter = new Intl.DateTimeFormat([], options);
+        document.getElementById('currenttime').innerHTML = formatter.format(date);
+        }
+        setInterval(displayTime, 1000);
+        // Get the canvas and its context
+        var canvas = document.getElementById("myCanvas");
+        var ctx = canvas.getContext("2d");
+
+        // Define the centers and radii of the wheels
+        var centersX = [canvas.width / 6, 5 * canvas.width / 6, canvas.width / 2];
+        var centerY = canvas.height / 2;
+        var radius = [canvas.height / 3.5, canvas.height / 3.5, canvas.height / 2.5];
+        // Define the colors and values of the sectors for each wheel
+        var colors1 = ["#FF0000", "#FF0000", "#FF0000", "#FF0000", "#FF0000", "#FF0000"];
+        var colors2 = ["#00FF00", "#00FF00", "#00FF00", "#00FF00"];
+        var colors3 = ["#0000FF", "#0000FF", "#0000FF", "#0000FF", "#0000FF", "#0000FF", "#0000FF", "#0000FF", "#0000FF", "#0000FF", "#0000FF", "#0000FF", "#0000FF", "#0000FF", "#0000FF", "#0000FF", "#0000FF", "#0000FF", "#0000FF", "#0000FF", "#0000FF", "#0000FF", "#0000FF"];
+ 
+        var values1 = ["Player 1", "Player 2", "Player 3", "Player 4", "Player 5", "Player 6"];
+        var values2 = ["Order 1", "Order 2", "Order 3", "Order 4"];
+        var values3 = ["Jote 1", "Jote 2", "Jote 3", "Jote 4", "Jote 5", "Jote 6", "Jote 7", "Jote 8", "Jote 9", "Jote 10", "Jote 11", "Jote 12", "Jote 13", "Jote 14", "Jote 15", "Jote 16", "Jote 17", "Jote 18", "Jote 19", "Jote 20", "Jote 21", "Jote 22"];
+ 
+
+        // Group the colors and values for each wheel
+        var colors = [colors1, colors2, colors3];
+        var values = [values1, values2, values3];
+
+        // Define the number of sectors for each wheel
+        var numSectors = [values1.length, values2.length, values3.length];
+         // Function to draw curved text
+         function drawCurvedText(centerX, centerY, radius, text) {
+            ctx.save();
+            ctx.translate(centerX, centerY - radius - 30); // Position the text above the wheel
+
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillStyle = "rgba(255, 105, 180, 1)"; // Change the color as needed
+            ctx.strokeStyle = "black"; // Set the stroke color to black
+            ctx.font = "30px Arial";
+
+            var textWidth = ctx.measureText(text).width;
+            var startAngle = (Math.PI - textWidth / radius) / 2;
+
+            ctx.beginPath();
+            ctx.arc(0, 0, radius, startAngle, Math.PI - startAngle);
+            ctx.strokeStyle = ctx.fillStyle;
+            ctx.strokeText(text, 0, 0);
+            ctx.stroke();
+
+            ctx.restore();
+        }
+
+        // Function to draw a sector of a wheel
+        function drawSector(centerX, startAngle, endAngle, color, value, radius) {
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY);
+            ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+            ctx.closePath()
+            // Add a shadow effect
+            ctx.shadowOffsetX = 5;
+            ctx.shadowOffsetY = 5;
+            ctx.shadowBlur = 5;
+            ctx.shadowColor = "rgba(0, 0, 0, 0.5)";
+            ctx.fillStyle = color;
+            ctx.fill();
+            // Reset shadow parameters
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 0;
+            ctx.shadowBlur = 0;
+            ctx.shadowColor = "rgba(0, 0, 0, 0)";
+            // Draw a stroke for separation color
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.5)";
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            var middleAngle = (startAngle + endAngle) / 2;
+            ctx.save();
+            ctx.translate(centerX, centerY);
+            ctx.rotate(middleAngle);
+            ctx.textAlign = "center";
+            ctx.fillStyle = "#000000";
+            ctx.font = "30px Arial";
+            ctx.fillText(value, radius / 1.5, 0);
+            ctx.restore();
+        }
+
+        // Function to draw a pointer for a wheel
+        function drawPointer(centerX, radius) {
+            ctx.beginPath();
+            ctx.moveTo(centerX + radius - 20, centerY);
+            ctx.lineTo(centerX + radius + 20, centerY - 10);
+            ctx.lineTo(centerX + radius + 20, centerY + 10);
+            ctx.closePath();
+            ctx.fillStyle = "#000000";
+            ctx.fill();
+        }
+            // Define a counter for the blinking light
+        var blinkCounter = 0;
+
+        // Function to draw a blinking light around the wheels
+        function drawBlinkingLight() {
+            // Increase the counter
+            blinkCounter++;
+
+            // Calculate the opacity using a sine function to create a pulsating effect
+            var opacity = Math.sin(blinkCounter / 30);
+
+            // Ensure opacity is within [0, 1]
+            if (opacity < 0) opacity = 0;
+            if (opacity > 1) opacity = 1;
+
+            // Draw the light with the calculated opacity
+            ctx.beginPath();
+            ctx.arc(centersX[0], centerY, radius[0] + 30, 0, 2 * Math.PI);
+            ctx.arc(centersX[1], centerY, radius[1] + 30, 0, 2 * Math.PI);
+            ctx.arc(centersX[2], centerY, radius[2] + 30, 0, 2 * Math.PI);
+            ctx.fillStyle = "rgba(255, 255, 0, " + opacity + ")";  // Change color as needed
+            ctx.fill();
+        }
+        // Define the rotation speeds and angles for each wheel
+        var rotationSpeeds = [0.01, 0.01, 0.01];
+        var rotationAngles = [0, 0, 0];
+
+        // Function to rotate a wheel
+        function rotateWheel() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            // Call the function for each wheel         
+            drawCurvedText(centersX[0], centerY, radius[0], "Player's Wheel");
+            drawCurvedText(centersX[1], centerY, radius[1], "Order Wheel");
+            drawCurvedText(centersX[2], centerY, radius[2], "jote Wheel");
+            // Draw blinking light around the wheels
+            drawBlinkingLight();
+
+            for (var j = 0; j < 3; j++) {
+                ctx.save();
+                ctx.translate(centersX[j], centerY);
+                ctx.rotate(rotationAngles[j]);
+                ctx.translate(-centersX[j], -centerY);
+                var startAngle = 0;
+                for (var i = 0; i < numSectors[j]; i++) {
+                    var endAngle = startAngle + 2 * Math.PI / numSectors[j];
+                    ctx.globalAlpha = 1;  // Make the wheel always fully opaque
+                    drawSector(centersX[j], startAngle, endAngle, colors[j][i], values[j][i], radius[j]);
+                    startAngle = endAngle;
+                }
+                ctx.restore();
+                drawPointer(centersX[j], radius[j]);
+                rotationAngles[j] += rotationSpeeds[j];
+                var sector = Math.floor((rotationAngles[j]) / (2 * Math.PI) * numSectors[j]) % numSectors[j];
+                document.getElementById("wheel" + (j + 1) + "Output").value = "Wheel " + (j + 1) + " - Color: " + colors[j][(numSectors[j] - sector - 1) % numSectors[j]] + ", Value: " + values[j][(numSectors[j] - sector - 1) % numSectors[j]];
+            }
+            requestAnimationFrame(rotateWheel);
+        }
+
+        // Start rotating the wheels
+        rotateWheel();
+       
+        // Add an event listener for the spin button
+        document.getElementById("spinButton").addEventListener("click", function () {
+            // Set the rotation speeds for a fast spin
+            rotationSpeeds = [0.1, 0.01, 0.01];
+            var timer = 30;
+            document.getElementById("timer").style.display = "block"; // Show the timer when the function starts
+            updateTimer();
+            var countdown = setInterval(updateTimer, 1000);
+
+            function updateTimer() {
+                document.getElementById("timer").innerHTML = timer;
+                timer--;
+
+                if (timer < 0) {
+                    clearInterval(countdown);
+                    document.getElementById("timer").style.display = "none"; // Hide the timer when it reaches 0
+                }
+            }
+
+            function formatTime(time) {
+                var seconds = time % 60;
+                return (seconds < 10 ? "0" : "") + seconds;
+            }
+            function formatTime(time) {
+                var minutes = Math.floor(time / 60);
+                var seconds = time % 60;
+                return (minutes < 10 ? "0" : "") + minutes + ":" + (seconds < 10 ? "0" : "") + seconds;
+            }
+
+            // After 10 seconds, slow down the first wheel and print its result
+            setTimeout(function () {
+                rotationSpeeds[0] = 0.01;
+                rotationSpeeds[1] = 0.1;
+                var sector = Math.floor((rotationAngles[0]) / (2 * Math.PI) * numSectors[0]) % numSectors[0];
+                console.log("Fast spin result for Wheel 1: Color: " + colors[0][(numSectors[0] - sector - 1) % numSectors[0]] + ", Value: " + values[0][(numSectors[0] - sector - 1) % numSectors[0]]);
+            }, 10000);
+
+            // After 20 seconds, slow down the second wheel and print its result
+            setTimeout(function () {
+                rotationSpeeds[1] = 0.01;
+                rotationSpeeds[2] = 0.1;
+                var sector = Math.floor((rotationAngles[1]) / (2 * Math.PI) * numSectors[1]) % numSectors[1];
+                console.log("Fast spin result for Wheel 2: Color: " + colors[1][(numSectors[1] - sector - 1) % numSectors[1]] + ", Value: " + values[1][(numSectors[1] - sector - 1) % numSectors[1]]);
+            }, 20000);
+
+            // After 30 seconds, slow down the third wheel and print its result
+            setTimeout(function () {
+                rotationSpeeds[2] = 0.01;
+                var sector = Math.floor((rotationAngles[2]) / (2 * Math.PI) * numSectors[2]) % numSectors[2];
+                var forbiddenSectors = [0, 2];  // Replace with your own indices
+                while (forbiddenSectors.includes(sector)) {
+                    // If the wheel landed on a forbidden section, increase the rotation angle
+                    // by a small fraction to make it land on the next section
+                    rotationAngles[2] += 0.01;
+                    sector = Math.floor((rotationAngles[2]) / (2 * Math.PI) * numSectors[2]) % numSectors[2];
+                }
+                console.log("Fast spin result for Wheel 3: Color: " + colors[2][(numSectors[2] - sector - 1) % numSectors[2]] + ", Value: " + values[2][(numSectors[2] - sector - 1) % numSectors[2]]);
+            }, 30000);
+    });
+</script>
+</body>
+
+</html>
