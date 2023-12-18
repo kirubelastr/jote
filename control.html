@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Game Page</title>
+    <script src="./jquery.min.js"></script>
+    <script src="./JsBarcode.all.js"></script>
+
+    <style>
+        body{
+            background-color: rgb(188, 68, 68);
+            margin: 0; 
+            overflow: hidden;
+        }
+        /* Add styles for the left container */
+        #left-container {
+            float: left;
+            width: 34%;
+            background-color: #f2f2f2; /* Adjust the color as needed */
+            padding: 40px;
+        }
+
+        /* Add styles for the right container */
+        #right-container {
+            float: right;
+            width: 40%;
+            background-color: #e6e6e6; /* Adjust the color as needed */
+            padding: 20px;
+        }
+        button {
+            background-color: #3c543d;
+            border: none;
+            color: white;
+            padding: 15px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 10px;
+            cursor: pointer;
+            transition: background-color 0.3s; /* Add transition for color change */
+        }
+
+        button.selected {
+            background-color: yellow;
+        }
+        button.printed {
+            background-color: red;
+        }
+        button.disabled {
+            background-color: grey;
+            cursor: not-allowed;
+        }
+        button.last {
+            background-color: rgb(54, 182, 167);
+        }
+        #table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        #table table {
+            width: 100%;
+            border: 1px solid black;
+        }
+        
+        #table th, #table td {
+            border: 1px solid black;
+            padding: 10px;
+            text-align: left;
+        }
+        select {
+            width: 50%;
+            height: 35px;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+
+        select option:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        select option:nth-child(odd) {
+            background-color: #e6e6e6;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            -webkit-transition: .4s;
+            transition: .4s;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            -webkit-transition: .4s;
+            transition: .4s;
+        }
+
+        input:checked + .slider {
+            background-color: #2196F3;
+        }
+
+        input:focus + .slider {
+            box-shadow: 0 0 1px #2196F3;
+        }
+
+        input:checked + .slider:before {
+            -webkit-transform: translateX(26px);
+            -ms-transform: translateX(26px);
+            transform: translateX(26px);
+        }
+
+        .slider.round {
+            border-radius: 34px;
+        }
+
+        .slider.round:before {
+            border-radius: 50%;
+        }
+
+        .list-item {
+            display: flex;
+            align-items: center;
+            justify-content: left;
+            margin-bottom: 10px;
+        }
+        .container {
+            display: flex; /* This will arrange its children (h3 tags) in a row */
+        }
+
+        .switchlable {
+            margin-right: 50px;
+            padding-right: 20px;
+            color: #000;
+            font-size: 20px;
+            font-weight: bold; 
+        }
+    </style>
+</head>
+<body>
+    <!-- Left Container -->
+    <div id="left-container">
+        <div class="container">
+            <h3 class="switchlable">house bet</h3>
+            <h3 class="switchlable">player bet</h3>
+        </div>
+        <div class="list-item">
+            <label class="switch">
+                <input type="checkbox" id="toggle1" onclick="toggleButton(1)">
+                <span class="slider round"></span>
+            </label>
+            <button type="button" id="player1" onclick="setPlayer(1)" disabled>Player 1</button>
+            <button id="printButton1" onclick="printReceipt(1)" disabled>Print Receipt Player 1</button>
+        </div>
+        
+        <div class="list-item">
+            <label class="switch">
+                <input type="checkbox" id="toggle2" onclick="toggleButton(2)">
+                <span class="slider round"></span>
+            </label>
+            <button type="button" id="player2" onclick="setPlayer(2)" disabled>Player 2</button>
+            <button id="printButton2" onclick="printReceipt(2)" disabled>Print Receipt Player 2</button>
+        </div>
+        
+        <div class="list-item">
+            <label class="switch">
+                <input type="checkbox" id="toggle3" onclick="toggleButton(3)">
+                <span class="slider round"></span>
+            </label>
+            <button type="button" id="player3" onclick="setPlayer(3)" disabled>Player 3</button>
+            <button id="printButton3" onclick="printReceipt(3)" disabled>Print Receipt Player 3</button>
+        </div>
+        
+        <div class="list-item">
+            <label class="switch">
+                <input type="checkbox" id="toggle4" onclick="toggleButton(4)">
+                <span class="slider round"></span>
+            </label>
+            <button type="button" id="player4" onclick="setPlayer(4)" disabled>Player 4</button>
+            <button id="printButton4" onclick="printReceipt(4)" disabled>Print Receipt Player 4</button>
+        </div>
+
+        <br><br>
+        <label for="bet">Bet Amount:</label>
+        <select id="bet" name="bet" required onchange="setBetAmount()">
+        </select>
+        
+        
+        <br><br>
+
+        <button type="button" id="setBetAndSpin" onclick="initiateSpinFast();"disabled>Set Bet and Spin</button>
+       
+        <form id="searchForm">
+            <label for="search">Search by date and time or barcode:</label>
+            <input type="text" id="search" name="search">
+            <input type="submit" value="Search">
+        </form>
+    </div>
+
+    <!-- Right Container -->
+    <div id="right-container">
+        <div id="table">
+
+        </div>
+    </div>
+
+    <script>
+        
+        var printedPlayers = [];
+        tablefill();
+
+        function tablefill() {
+            const xhttp = new XMLHttpRequest();
+            xhttp.onload = function () {
+                document.getElementById("table").innerHTML = this.responseText;
+            }
+            xhttp.open("GET", "system.php");
+            xhttp.send();
+        }
+
+        setInterval(function () {
+            tablefill();
+        }, 1000);
+
+        document.getElementById('searchForm').addEventListener('submit', function (event) {
+            event.preventDefault(); // Prevent the form from being submitted normally
+            const searchValue = document.getElementById('search').value;
+            const xhttp = new XMLHttpRequest();
+            xhttp.onload = function () {
+                document.getElementById("table").innerHTML = this.responseText;
+            }
+            xhttp.open("GET", "system.php?search=" + encodeURIComponent(searchValue));
+            xhttp.send();
+        });
+
+        function toggleButton(player) {
+            var toggle = document.getElementById('toggle'+player);
+            var button = document.getElementById('player'+player);
+            var printButton = document.getElementById('printButton'+player); // Fix ID here
+            
+            if (toggle.checked) {
+                button.disabled = true;
+                printButton.disabled = true;
+                button.classList.add('disabled'); // Use classList to add the 'disabled' class
+                printButton.classList.add('disabled'); // Use classList to add the 'disabled' class
+                console.log('Before add:');
+                for (var i = 0; i < printedPlayers.length; i++) {
+                    console.log(printedPlayers[i]);
+                }
+                printedPlayers.push(player);
+                console.log('After add:');
+                for (var i = 0; i < printedPlayers.length; i++) {
+                    console.log(printedPlayers[i]);
+                }
+            } else {
+                if (betAmount !== null) {
+                    button.disabled = false;
+                    printButton.disabled = false;
+                }
+                button.classList.remove('disabled'); // Use classList to remove the 'disabled' class
+                printButton.classList.remove('disabled'); // Use classList to remove the 'disabled' class
+                var index = printedPlayers.indexOf(player);
+                console.log('Before remove:');
+                for (var i = 0; i < printedPlayers.length; i++) {
+                    console.log(printedPlayers[i]);
+                }
+                if (index !== -1) {
+                    printedPlayers.splice(index, 1);
+                }
+                console.log('After remove:');
+                for (var i = 0; i < printedPlayers.length; i++) {
+                    console.log(printedPlayers[i]);
+                }
+            }
+            checkArrayAndEnableButton();
+        }
+
+        var selectedPlayer = null;
+        var betAmount = null;
+
+        function generateOptions() {
+            var select = document.getElementById('bet');
+            while (select.firstChild) {
+                select.removeChild(select.firstChild);
+            }
+            var placeholder = document.createElement('option');
+            placeholder.value = "";
+            placeholder.text = "Select Bet Amount";
+            placeholder.disabled = true;
+            placeholder.selected = true;
+            select.appendChild(placeholder);
+            for (var i = 10; i <= 400; i += 10) {
+                var option = document.createElement('option');
+                option.value = i;
+                option.text = i;
+                select.appendChild(option);
+            }
+        }
+        function checkArrayAndEnableButton() {
+            var betAmount = document.getElementById('bet').value;
+            var toggle1 = document.getElementById('toggle1').checked;
+            var toggle2 = document.getElementById('toggle2').checked;
+            var toggle3 = document.getElementById('toggle3').checked;
+            var toggle4 = document.getElementById('toggle4').checked;
+
+            var allTogglesOn = toggle1 && toggle2 && toggle3 && toggle4; // Check if all toggles are on
+
+            console.log('Before checking conditions');
+            console.log('All toggles on:', allTogglesOn);
+            console.log('Number of printed players:', printedPlayers.length);
+            console.log('Bet amount:', betAmount);
+
+            if (betAmount !== null && printedPlayers.length === 4 && !allTogglesOn) {
+                console.log('All conditions met. Enabling the "Set Bet and Spin" button.');
+                document.getElementById('setBetAndSpin').disabled = false; // Enable the "Set Bet and Spin" button
+                document.getElementById('setBetAndSpin').style.background = 'orange'; // Change the background color to bright orange
+                 resetAllvariables();
+            } else {
+                console.log('Not all conditions met. Disabling the "Set Bet and Spin" button.');
+                document.getElementById('setBetAndSpin').disabled = true; // Disable the "Set Bet and Spin" button
+            }
+
+            console.log('After checking conditions');
+        }
+
+        function resetAllvariables(){
+
+        }
+        function setPlayer(player) {
+            selectedPlayer = player;
+            updateButtonColors();
+            checkArrayAndEnableButton();
+        }
+        function setBetAmount() {
+            betAmount = document.getElementById('bet').value;
+            for (let i = 1; i <= 4; i++) {
+                let printButton = document.getElementById('printButton' + i);
+                if (printButton) {
+                    printButton.disabled = false;
+                }
+            }
+            document.querySelectorAll('.list-item button').forEach(function (button) {
+                button.classList.add('selected');
+                button.style.color = 'black'; // Set text color to black
+            });
+        }
+
+        function updateButtonColors() {
+            // Change all player buttons color to yellow and text to black
+            for (let playerNumber = 1; playerNumber <= 4; playerNumber++) {
+                const playerButton = document.getElementById('player' + playerNumber);
+                if (playerButton) {
+                    playerButton.classList.remove('printed'); // Remove printed class
+                    playerButton.classList.add('selected'); // Add selected class for yellow color
+                    playerButton.style.color = 'black'; // Set text color to black
+                }
+            }
+
+            // Change button color to red if the receipt is printed
+            printedPlayers.forEach(function (playerNumber) {
+                const playerButton = document.getElementById('player'+playerNumber);
+                const printButton = document.getElementById('printButton'+playerNumber);
+                const toggleButton = document.getElementById('toggle'+playerNumber);
+                const betButton = document.getElementById('bet');
+                betButton.disabled = true;
+                if (playerButton && printButton && toggleButton) {
+                    playerButton.classList.remove('selected');
+                    playerButton.classList.add('printed');
+                    playerButton.disabled = true;
+                    printButton.classList.remove('selected');
+                    printButton.classList.add('printed');
+                    printButton.disabled = true;
+                    toggleButton.disabled = true;
+                }
+            });
+
+        }
+
+
+
+
+        generateOptions();
+        function initiateSpinFast() {
+            console.log("initiate function called");
+
+            // Set the session and send the bet amount here
+            $.ajax({
+                url: 'set_session.php', // Replace with your server-side script URL
+                type: 'POST',
+                data: { betAmount: betAmount }, // Send the bet amount with the session
+                success: function (response) {
+                    var jsonResponse = JSON.parse(response);
+
+                    if (jsonResponse.status === "success") {
+                        console.log(jsonResponse.message);
+                        console.log("Session value: " + jsonResponse.sessionValue);
+                    } else {
+                        console.log("Failed to set session");
+                    }
+                },
+                error: function (error) {
+                    console.log("Error: ", error);
+                }
+            });
+        }
+        function printReceipt(playerNumber) {
+            checkArrayAndEnableButton();
+            const receipt = `Player ${playerNumber}, Bet Amount: ${betAmount}, Date and Time: ${new Date()}`;
+            console.log(receipt);
+            printedPlayers.forEach(function(playerNumber) {
+                console.log('before print receipt'+playerNumber);
+            });
+            printedPlayers.push(playerNumber);
+
+            printedPlayers.forEach(function(playerNumber) {
+                console.log('after print receipt'+playerNumber);
+            });
+
+            // Create a new popup window and insert the data
+            var popupWindow = window.open("", "_blank");
+            popupWindow.document.write(`<h1>Date and Time: ${new Date()}</h1>`);
+            popupWindow.document.write(`<h1>Player: ${playerNumber}</h1>`);
+            popupWindow.document.write(`<h1>Bet Amount: ${betAmount}</h1>`);
+
+            // Generate barcode
+            let svgElement = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+            JsBarcode(svgElement, receipt, { format: "CODE128" });
+            popupWindow.document.body.appendChild(svgElement);
+
+            // Add receipt text below the barcode
+            let receiptText = document.createElement("p");
+            receiptText.textContent = receipt;
+            popupWindow.document.body.appendChild(receiptText);
+
+            // Print the content
+            popupWindow.print();
+
+            // Close the popup window after printing
+            popupWindow.close();
+
+            // Disable the buttons and change their color
+            var toggle = document.getElementById('toggle' + playerNumber);
+            var button = document.getElementById('player' + playerNumber);
+            var printButton = document.getElementById('printButton' + playerNumber);
+            toggle.disabled = true;
+            button.disabled = true;
+            printButton.disabled = true;
+            button.style.backgroundColor = "burgundy";
+            printButton.style.backgroundColor = "burgundy";
+
+            // Call updateButtonColors function
+            updateButtonColors();
+        }
+
+
+    </script>
+</body>
+</html>

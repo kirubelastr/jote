@@ -5,18 +5,41 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Spinning Wheel</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <style>
         /* Set the background color and remove margins */
         body {
-            background-color: rgb(26, 218, 228);
+            background-image: url("bg.png");
+            background-size: cover;
+            background-color: rgb(255, 255, 255);
             margin: 0; 
             overflow: hidden;
+        }
+        #ticket{
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            min-width: 120px;
+            max-width: auto;
+            
+            height: 30px;
+            line-height: 30px;
+            font-size: 20px;
+            color: white;
+            text-align: center;
+            padding: 5px;
+            border: 1px solid black;
+            border-radius: 5px;
+            box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.3);
+            background: linear-gradient(to right, rgb(124, 66, 66), rgb(128, 0, 0));
         }
         #currenttime {
             position: absolute;
             top: 5px;
             right: 5px;
             width: 120px;
+            
             height: 30px;
             line-height: 30px;
             font-size: 20px;
@@ -53,33 +76,146 @@
         canvas {
             display: block;
         }
+        @keyframes fadeIn {
+        0% {opacity: 0;}
+        100% {opacity: 1;}
+    }
+    @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+                animation-timing-function: ease-out;
+            }
+            100% {
+                transform: rotate(720deg);
+                animation-timing-function: ease-in;
+            }
+        }
+
+        @keyframes fadeOut {
+            0% {opacity: 1;}
+            100% {opacity: 0;}
+        }
+        
+
+        #popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            min-width: 200px; /* Set a minimum width for the popup */
+            max-width: 80%; /* Set a maximum width for the popup */
+            padding: 50px; /* Increase padding for a larger popup */
+            background-color: #ff1e1e; /* Use a solid vibrant color for the background */
+            border: 5px solid #ff1e1e; /* Add a border for more style */
+            border-radius: 20px; /* Set border radius to 20px for rounded corners */
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5); /* Increase box shadow for a more pronounced effect */
+            text-align: center;
+            font-size: 30px; /* Increase font size for better readability */
+            color: #fff; /* Change text color to white for contrast against the background */
+            z-index: 1000;
+            animation: fadeIn 1s;
+        }
+
+        .fadeOut {
+            animation: fadeOut 1s;
+        }
+
+
+
+        #myTable, #myTable2 {
+        position: absolute;
+        width: 30%;
+        height: 15%;
+        border: 8px solid gold;
+        border-radius: 15px;
+        box-shadow: 5px 5px 15px rgba(0,0,0,0.3);
+        overflow: hidden;
+        background-color: #f2f2f2;
+        table-layout: fixed; /* Add this to set the table layout */
+        }
+
+        #myTable {
+            top: 650px;
+            left: 50px;
+        }
+
+        #myTable2 {
+            top: 650px;
+            left: 65%;
+        }
+
+        #myTable tr:first-child, #myTable2 tr:first-child {
+            background-color: #009879; /* Change this to your preferred color */
+        }
+
+        #myTable td, #myTable2 td {
+            padding: 5px;
+            text-align: center;
+            border: none;
+            max-width: 100px; /* Set your desired maximum width here */
+            overflow: auto; /* Add this to handle content that exceeds the maximum width */
+            height: 10px; /* Set your desired height here */
+            word-wrap: break-word; /* Add this to handle long words */
+            table-layout: fixed; /* Add this to set the table layout */
+        }
+
+        #myTable tr, #myTable2 tr {
+            transition: all 0.3s ease-in-out;
+            height: 30px; /* Set your desired height here */
+        }
+
+        #myTable tr:nth-child(even), #myTable2 tr:nth-child(even) {
+            background-color: #e6e6e6;
+        }
+
+        #myTable tr:nth-child(odd), #myTable2 tr:nth-child(odd) {
+            background-color: #ffffff;
+        }
+
+
     </style>
 </head>
 
 <body>
+    <input type="text" id="wheel1Output" readonly style="display: none;">
+    <input type="text" id="wheel2Output" readonly style="display: none;">
+    <input type="text" id="wheel3Output" readonly style="display: none;">
+    
+    <div id="ticket"></div>
     <div id="currenttime"></div>
         <div id="timer" class="timer-text"></div>
     <!-- The canvas for drawing the wheels -->
-    <canvas id="myCanvas" width="1540" height="700" style="border:1px solid #d3d3d3;">
+    <canvas id="myCanvas" width="1540" height="650">
         Your browser does not support the HTML5 canvas tag.
     </canvas>
-
-    <!-- Spin button -->
-    <button id="spinButton" style="font-size: 20px; padding: 10px 20px;">Spin Fast!</button>
-
-    <!-- Information display -->
-    <div id="info"></div>
-
-    <!-- Output displays for the wheels -->
-    <input type="text" id="wheel1Output" readonly>
-    <input type="text" id="wheel2Output" readonly>
-    <input type="text" id="wheel3Output" readonly>
-
-    <!-- Table for displaying additional information -->
-    <table id="myTable" border="1" style="width: 80%; height: 100px;">
+    <div id="popup"></div>
+    <table id="myTable">
         <tr>
+            <td id="betAmount" rowspan="5">bet amount</td>
             <td>players</td>
             <td>playing</td>
+        </tr>
+        <tr>
+            <td>1</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>2</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>3</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>4</td>
+            <td></td>
+        </tr>
+    </table>
+    
+    <table id="myTable2">
+        <tr>
             <td>order</td>
             <td>jote</td>
             <td>win</td>
@@ -88,6 +224,9 @@
             <td></td>
             <td></td>
             <td></td>
+        </tr>
+        <tr>
+            <td></td>
             <td></td>
             <td></td>
         </tr>
@@ -95,24 +234,14 @@
             <td></td>
             <td></td>
             <td></td>
-            <td></td>
-            <td></td>
         </tr>
         <tr>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-        </tr>
-        <tr>
-            <td></td>
-            <td></td>
             <td></td>
             <td></td>
             <td></td>
         </tr>
     </table>
+    
 
     <script>
         function displayTime() {
@@ -125,7 +254,7 @@
         // Get the canvas and its context
         var canvas = document.getElementById("myCanvas");
         var ctx = canvas.getContext("2d");
-
+        let audio = new Audio('tick.mp3');
         // Define the centers and radii of the wheels
         var centersX = [canvas.width / 6, 5 * canvas.width / 6, canvas.width / 2];
         var centerY = canvas.height / 2;
@@ -135,10 +264,15 @@
         var colors2 = ["#00FF00", "#00FF00", "#00FF00", "#00FF00"];
         var colors3 = ["#0000FF", "#0000FF", "#0000FF", "#0000FF", "#0000FF", "#0000FF", "#0000FF", "#0000FF", "#0000FF", "#0000FF", "#0000FF", "#0000FF", "#0000FF", "#0000FF", "#0000FF", "#0000FF", "#0000FF", "#0000FF", "#0000FF", "#0000FF", "#0000FF", "#0000FF", "#0000FF"];
  
-        var values1 = ["Player 1", "Player 2", "Player 3", "Player 4", "Player 5", "Player 6"];
+        var values1 = ["1/2","1/2","3/1","3/1","4/1","4/1","3/2","3/2","2/4","2/4","4/3","4/3","1/2/3","1/2/3","1/2/3","2/1/4","2/1/4","2/1/4","3/4/2","3/4/2","3/4/2","4/1/3","4/1/3","4/1/3"];
         var values2 = ["Order 1", "Order 2", "Order 3", "Order 4"];
         var values3 = ["Jote 1", "Jote 2", "Jote 3", "Jote 4", "Jote 5", "Jote 6", "Jote 7", "Jote 8", "Jote 9", "Jote 10", "Jote 11", "Jote 12", "Jote 13", "Jote 14", "Jote 15", "Jote 16", "Jote 17", "Jote 18", "Jote 19", "Jote 20", "Jote 21", "Jote 22"];
- 
+        
+        var sessionvalues=null;
+        var betamountrecived=null;
+        
+        var odd1 = [];
+        var odd2 = [];
 
         // Group the colors and values for each wheel
         var colors = [colors1, colors2, colors3];
@@ -161,7 +295,6 @@
             var startAngle = (Math.PI - textWidth / radius) / 2;
 
             ctx.beginPath();
-            ctx.arc(0, 0, radius, startAngle, Math.PI - startAngle);
             ctx.strokeStyle = ctx.fillStyle;
             ctx.strokeText(text, 0, 0);
             ctx.stroke();
@@ -175,6 +308,7 @@
             ctx.moveTo(centerX, centerY);
             ctx.arc(centerX, centerY, radius, startAngle, endAngle);
             ctx.closePath()
+                  
             // Add a shadow effect
             ctx.shadowOffsetX = 5;
             ctx.shadowOffsetY = 5;
@@ -197,57 +331,138 @@
             ctx.rotate(middleAngle);
             ctx.textAlign = "center";
             ctx.fillStyle = "#000000";
-            ctx.font = "30px Arial";
-            ctx.fillText(value, radius / 1.5, 0);
-            ctx.restore();
+            ctx.font = "20px Arial";
+            ctx.fillText(value, radius / 1.4, 2);
+            ctx.restore(); 
+        }
+        function drawcentercircle(centerX, centerY, radius){
+            var circleRadius = radius / 3;
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, circleRadius, 0, 2 * Math.PI); // Draws a full circle at the given center with radius 40
+            ctx.fillStyle = "rgba(255, 255, 0, 1)";  // Solid color
+            ctx.fill();
+
+            // Calculate font size based on circle radius
+            var fontSize = circleRadius*0.5;  // Adjust as needed
+
+            // Draw the session bet amount in the center of the circle
+            ctx.font = fontSize + "px Arial";  // Change font type as needed
+            ctx.fillStyle = "black";  // Change text color as needed
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";  // Align the text vertically in the middle
+            ctx.fillText( "$" , centerX, centerY);  
         }
 
-        // Function to draw a pointer for a wheel
+
+       // Function to draw a pointer for a wheel
         function drawPointer(centerX, radius) {
             ctx.beginPath();
-            ctx.moveTo(centerX + radius - 20, centerY);
-            ctx.lineTo(centerX + radius + 20, centerY - 10);
-            ctx.lineTo(centerX + radius + 20, centerY + 10);
+            ctx.moveTo(centerX + radius - 10, centerY); // Move the edge a bit inward
+            ctx.lineTo(centerX + radius + 50, centerY - 30); // Create a falling down slope effect
+            ctx.lineTo(centerX + radius + 50, centerY + 30); // Create a falling down slope effect
             ctx.closePath();
-            ctx.fillStyle = "#000000";
+
+            // Create a gradient for the fill to make it look shiny and golden
+            var gradient = ctx.createLinearGradient(centerX, centerY - 30, centerX, centerY + 30);
+            gradient.addColorStop(0, '#FFD700'); // Add golden color at the top
+            gradient.addColorStop(0.5, '#FFFF00'); // Add bright yellow color in the middle for shine
+            gradient.addColorStop(1, '#FFD700'); // Add golden color at the bottom
+
+            ctx.fillStyle = gradient;
             ctx.fill();
+
+            // Add a shadow to create a 3D effect
+            ctx.shadowColor = '#000000';
+            ctx.shadowBlur = 10;
+            ctx.shadowOffsetX = 5;
+            ctx.shadowOffsetY = 5;
+
+            // Draw the outline of the pointer
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = '#000000';
+            ctx.stroke();
         }
-            // Define a counter for the blinking light
-        var blinkCounter = 0;
 
         // Function to draw a blinking light around the wheels
-        function drawBlinkingLight() {
-            // Increase the counter
-            blinkCounter++;
-
-            // Calculate the opacity using a sine function to create a pulsating effect
-            var opacity = Math.sin(blinkCounter / 30);
-
-            // Ensure opacity is within [0, 1]
-            if (opacity < 0) opacity = 0;
-            if (opacity > 1) opacity = 1;
-
-            // Draw the light with the calculated opacity
+        function wheeledge() {
+            // Draw the light with the calculated opacity and a shining golden color
             ctx.beginPath();
-            ctx.arc(centersX[0], centerY, radius[0] + 30, 0, 2 * Math.PI);
-            ctx.arc(centersX[1], centerY, radius[1] + 30, 0, 2 * Math.PI);
-            ctx.arc(centersX[2], centerY, radius[2] + 30, 0, 2 * Math.PI);
-            ctx.fillStyle = "rgba(255, 255, 0, " + opacity + ")";  // Change color as needed
+            ctx.arc(centersX[0], centerY, radius[0] + 10, 0, 2 * Math.PI);
+            ctx.arc(centersX[1], centerY, radius[1] + 10, 0, 2 * Math.PI);
+            ctx.arc(centersX[2], centerY, radius[2] + 10, 0, 2 * Math.PI);
+
+            // Set a shining golden color with higher opacity
+            ctx.fillStyle = "rgba(255, 223, 0, 0.9)";
+
+            // Add a shadow effect
+            ctx.shadowOffsetX = 5;
+            ctx.shadowOffsetY = 5;
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = "rgba(0, 0, 0, 0.7)";
+
+            // // Add a stroke for a bright edge in the middle
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.8)";
+            ctx.lineWidth = 2;
+
             ctx.fill();
+            // ctx.stroke();
+
+            // Reset shadow parameters
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 0;
+            ctx.shadowBlur = 0;
+            ctx.shadowColor = "rgba(0, 0, 0, 0)";
         }
+
+
+            // // Define a counter for the blinking light
+            // var blinkCounter = 0;
+
+            // // Function to draw a blinking light around the wheels
+            // function drawBlinkingLight(a) {
+                
+            //     // Increase the counter
+            //     blinkCounter++;
+
+            //     // Calculate the opacity using a sine function to create a pulsating effect
+            //     var opacity = Math.sin(blinkCounter / 30);
+
+            //     // Ensure opacity is within [0, 1]
+            //     if (opacity < 0) opacity = 0;
+            //     if (opacity > 1) opacity = 1;
+
+            //     // Draw the light with the calculated opacity
+            //     ctx.beginPath();
+            //     ctx.arc(centersX[a], centerY, radius[a] + 10, 0, 2 * Math.PI);
+            //     ctx.fillStyle = "rgba(255, 55, 0, " + opacity + ")";  // Change color as needed
+            //     ctx.fill();
+            // }
         // Define the rotation speeds and angles for each wheel
         var rotationSpeeds = [0.01, 0.01, 0.01];
         var rotationAngles = [0, 0, 0];
+        var colorssector = ["red", "white"];
 
-        // Function to rotate a wheel
+        function getColorForSector(sectorNumber, wheelNumber) {
+            if (wheelNumber == 2) {  // Apply specific colors only to the third wheel
+                if (sectorNumber == 2) {
+                    return "blue";  // color the third sector blue
+                } else if (sectorNumber == 4) {
+                    return "green";  // color the fifth sector green
+                }
+            }
+            // For all other wheels and sectors, alternate between red and white
+            return colorssector[sectorNumber % colorssector.length];
+        }
+
         function rotateWheel() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             // Call the function for each wheel         
             drawCurvedText(centersX[0], centerY, radius[0], "Player's Wheel");
             drawCurvedText(centersX[1], centerY, radius[1], "Order Wheel");
             drawCurvedText(centersX[2], centerY, radius[2], "jote Wheel");
+            
             // Draw blinking light around the wheels
-            drawBlinkingLight();
+            wheeledge();
 
             for (var j = 0; j < 3; j++) {
                 ctx.save();
@@ -258,32 +473,202 @@
                 for (var i = 0; i < numSectors[j]; i++) {
                     var endAngle = startAngle + 2 * Math.PI / numSectors[j];
                     ctx.globalAlpha = 1;  // Make the wheel always fully opaque
-                    drawSector(centersX[j], startAngle, endAngle, colors[j][i], values[j][i], radius[j]);
+                    // Use getColorForSector(i) as the color for each sector
+                    drawSector(centersX[j], startAngle, endAngle, getColorForSector(i, j), values[j][i], radius[j]); 
                     startAngle = endAngle;
                 }
                 ctx.restore();
-                drawPointer(centersX[j], radius[j]);
+                drawcentercircle(centersX[j], centerY,radius[j])
+                drawPointer(centersX[j],radius[j]);
                 rotationAngles[j] += rotationSpeeds[j];
                 var sector = Math.floor((rotationAngles[j]) / (2 * Math.PI) * numSectors[j]) % numSectors[j];
-                document.getElementById("wheel" + (j + 1) + "Output").value = "Wheel " + (j + 1) + " - Color: " + colors[j][(numSectors[j] - sector - 1) % numSectors[j]] + ", Value: " + values[j][(numSectors[j] - sector - 1) % numSectors[j]];
+                document.getElementById("wheel" + (j + 1) + "Output").value = "Wheel " + (j + 1) + " - Color: " + getColorForSector((numSectors[j] - sector - 1) % numSectors[j]) + ", Value: " + values[j][(numSectors[j] - sector - 1) % numSectors[j]];
             }
             requestAnimationFrame(rotateWheel);
         }
-
-        // Start rotating the wheels
         rotateWheel();
-       
-        // Add an event listener for the spin button
-        document.getElementById("spinButton").addEventListener("click", function () {
-            // Set the rotation speeds for a fast spin
-            rotationSpeeds = [0.1, 0.01, 0.01];
-            var timer = 30;
+
+      var checkSession; // Declare the variable outside the function
+
+        function checkSessionStatus() {
+            console.log("Checking for session..."); // Logs "Checking for session..."
+
+            // Use AJAX to check the session status on the server
+            $.ajax({
+                url: 'check_session.php', // Replace with your server-side script URL
+                type: 'GET',
+                success: function(response) {
+                    // Parse the JSON response
+                    var jsonResponse = JSON.parse(response);
+
+                    // If the session is set, call your function and stop checking
+                    if (jsonResponse.session) {
+                        console.log("Session received: " + jsonResponse.value); // Logs "Session received: value"
+                        console.log("Bet amount received: " + jsonResponse.betAmount); // Logs "Bet amount received: betAmount"
+                        // Update the bet amount in the table
+                        document.getElementById('betAmount').innerText = jsonResponse.betAmount * 4;
+                        var ticket=jsonResponse.value;
+                        updateticket(jsonResponse.value);
+                        spinwheelfast(jsonResponse.betAmount);
+                        sessionvalues = jsonResponse.value;
+                        betamountrecived = jsonResponse.betAmount;
+
+                        // Stop checking for the session
+                        clearInterval(checkSession);
+                    }
+                },
+                error: function(error) {
+                    // Handle any errors
+                    console.log("Error: ", error);
+                }
+            });
+        }
+
+        checkSessionStatus(); // Call the function once immediately
+        checkSession = setInterval(checkSessionStatus, 1000); // Then set the interval
+
+            function updateticket(ticketnumber) {
+                document.getElementById("ticket").innerHTML = " # "+ticketnumber;  // Use the formatTime function to format the timer
+            }
+            var winningsArray = [];
+
+        function sendtableresult(){
+            console.log(winningsArray);
+            $.ajax({
+                url: 'save_to_database.php',
+                type: 'POST',
+                data: {
+                    winningsArray: JSON.stringify(winningsArray),
+                    sessionvalue: sessionvalues,
+                    betAmount: betamountrecived
+                },
+                success: function(response) {
+                    console.log(response);
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    console.error("AJAX Error: " + textStatus + "; " + errorThrown);
+                },
+                complete: function(jqXHR, textStatus) {
+                    console.log("AJAX request completed with status: " + textStatus);
+                }
+            });
+        }
+
+        function fillTableFromResult(result, tableId, column) {
+            console.log('Filling table for column ' + column + ' with result: ' + result);
+            var numbers = result.split('/');
+            var table = document.getElementById(tableId);
+            var rows = table.getElementsByTagName('tr');
+            for (var i = 1; i < rows.length; i++) {
+                var cells = rows[i].getElementsByTagName('td');
+                if (tableId === "myTable" && column === 1) {
+                    var status = numbers.includes(i.toString());
+                    cells[column].innerText = status ? i : '';
+                    cells[column].style.backgroundColor = status ? 'green' : 'red';
+                    if (!status) {
+                        for (var j = 1; j < cells.length; j++) {
+                            cells[j].style.backgroundColor = 'red';
+                        }
+                    }
+                } else if (tableId === "myTable2") {
+                    if (column === 0) {
+                        cells[column].innerText = numbers[i-1] ? 'Player ' + numbers[i-1] : '';
+                    } else if (column === 1) {
+                        cells[column].innerText = numbers[i-1] || '';
+                    } else if (column === 2) {
+                        var betAmount = document.getElementById('betAmount').innerText;
+                        var joteCellValue = cells[1].innerText;
+                        var jote = parseFloat(joteCellValue.replace('X', ''));
+                        var parsedBetAmount = parseFloat(betAmount);
+                        if (!isNaN(parsedBetAmount) && !isNaN(jote)) {
+                            cells[column].innerText = (parsedBetAmount/4) * jote;
+                            winnings = (parsedBetAmount/4) * jote;
+                            var playerExists = winningsArray.some(function(el) {
+                                return el.order === cells[0].innerText;
+                            });
+                            if (!playerExists) {
+                                winningsArray.push({order: cells[0].innerText, jote: joteCellValue, winnings: winnings});
+                            }
+                            
+                        } else {
+                            cells[column].innerText = '';
+                        }
+                    }
+                }
+            }
+            if (tableId === "myTable2" && column === 2) {
+                sendtableresult();
+            }
+        }
+
+
+        function resetAllTables() {
+            var tableIds = ["myTable", "myTable2"];
+            for (var i = 0; i < tableIds.length; i++) {
+                var table = document.getElementById(tableIds[i]);
+                var rows = table.getElementsByTagName('tr');
+                for (var j = 1; j < rows.length; j++) {
+                    var cells = rows[j].getElementsByTagName('td');
+                    var startColumn = (tableIds[i] === "myTable") ? 1 : 0;
+                    for (var k = startColumn; k < cells.length; k++) {
+                        cells[k].style.backgroundColor = '';
+                        cells[k].innerText = '';
+                    }
+                }
+            }
+        }
+
+
+        function spinwheelfast() {
+                        
+            function popupfunction(result, centerX){
+                var popupDiv = document.getElementById('popup');
+                popupDiv.innerHTML = "<p>" + result + "</p>";
+                popupDiv.style.display = 'block';
+                popupDiv.style.left = centerX + 'px';  // Set the horizontal position of the popup
+               if(centerX === canvas.width / 2) {
+                confetti({ particleCount: 5000, spread: 100000, target: 'popup' });  // Display more confetti in the popup div
+                            
+               }
+                // After 10 seconds, hide the popup div
+                setTimeout(function () {
+                    // Play a sound effect
+                    popupDiv.classList.add('fadeOut');
+                    setTimeout(function () {
+                        popupDiv.style.display = 'none';
+                        popupDiv.classList.remove('fadeOut');
+                        if(result === "result2"){
+                           // Stop the sound effect when the popup disappears
+                            a.pause();
+                            a.currentTime = 0;
+                        }
+                    }, 1000);
+                }, 10000);
+            }
+            resetAllTables();
+
+                    
+
+            function sectorChangeFunction(a) {
+                let audio = new Audio(); // Declare audio outside the function
+                // Stop any currently playing audio
+                audio.pause();
+                audio.currentTime = 0;
+
+                // Load and play a new audio file
+                audio.src = 'tick.mp3';
+                audio.play();
+
+                // Calculate current sector
+                let currentSector = Math.floor((rotationAngles[a]) / (2 * Math.PI) * numSectors[a]) % numSectors[a];
+            }
+            var timer = 60;  // Set the timer to 60 seconds
             document.getElementById("timer").style.display = "block"; // Show the timer when the function starts
             updateTimer();
             var countdown = setInterval(updateTimer, 1000);
 
             function updateTimer() {
-                document.getElementById("timer").innerHTML = timer;
+                document.getElementById("timer").innerHTML = formatTime(timer);  // Use the formatTime function to format the timer
                 timer--;
 
                 if (timer < 0) {
@@ -293,45 +678,227 @@
             }
 
             function formatTime(time) {
-                var seconds = time % 60;
-                return (seconds < 10 ? "0" : "") + seconds;
-            }
-            function formatTime(time) {
                 var minutes = Math.floor(time / 60);
                 var seconds = time % 60;
                 return (minutes < 10 ? "0" : "") + minutes + ":" + (seconds < 10 ? "0" : "") + seconds;
             }
 
-            // After 10 seconds, slow down the first wheel and print its result
-            setTimeout(function () {
-                rotationSpeeds[0] = 0.01;
-                rotationSpeeds[1] = 0.1;
+           
+                  
+            setTimeout(() => {
+            new Promise((resolve, reject) => {
+                rotationSpeeds[0] = 0.1;
+                let lastSector = null; // Keep track of the last sector
+                function rotationSpeed() {
+                    rotationSpeeds[0] -= 0.001; // Decrease speed by a small amount
+                    if (rotationSpeeds[0] < 0) {
+                        rotationSpeeds[0] = 0; // Ensure speed doesn't go below 0
+                    }
+                    
+                    // Calculate current sector
+                    let currentSector = Math.floor((rotationAngles[0]) / (2 * Math.PI) * numSectors[0]) % numSectors[0];
+
+                    // If the sector has changed, call the function
+                    if (lastSector !== null && currentSector !== lastSector) {
+                        sectorChangeFunction(0); // Replace this with your function
+                    }
+
+                    // Update lastSector
+                    lastSector = currentSector;
+                }
+
+                rotationSpeed();
+
+                let rotationInterval = setInterval(rotationSpeed, 100); 
+
+                // Clear the interval after 10 seconds
+                setTimeout(() => {
+                    clearInterval(rotationInterval); // Clear the interval to stop the function
+                    resolve(); // Resolve the promise when the rotation speed is 0
+                }, 10000);
+               }).then(() => {
                 var sector = Math.floor((rotationAngles[0]) / (2 * Math.PI) * numSectors[0]) % numSectors[0];
                 console.log("Fast spin result for Wheel 1: Color: " + colors[0][(numSectors[0] - sector - 1) % numSectors[0]] + ", Value: " + values[0][(numSectors[0] - sector - 1) % numSectors[0]]);
-            }, 10000);
+                var values2, values3;
+                var result = values[0][(numSectors[0] - sector - 1) % numSectors[0]];
 
-            // After 20 seconds, slow down the second wheel and print its result
-            setTimeout(function () {
-                rotationSpeeds[1] = 0.01;
-                rotationSpeeds[2] = 0.1;
+                fillTableFromResult(result, 'myTable', 1);
+                if (result === "1/2") {
+                    values2 = ["1/2", "1/2", "1/2", "1/2", "1/2", "1/2", "2/1", "2/1", "2/1", "2/1", "2/1", "2/1"];
+                    values3 = ["2X/2X", "2X/1.6X", "2X/1.6X", "1.6X/2X", "1.6X/2X", "2.4X/1.6X", "1.6X/2.4X", "2.4X/1.2X", "2.4X/1.2X", "1.2X/2.4X", "1.2X/2.4X", "2.8X/1.2X", "1.2X/2.8X", "2.8X/0.8X", "2.8X/0.8X", "0.8X/2.8X", "0.8X/2.8X", "1X/4X", "5X/1X", "6X/1X", "1X/30X", "40X/1X"];
+                    odd1=["1X/4X", "5X/1X", "6X/1X"];
+                    odd2=[ "1X/30X", "40X/1X"];
+                } else if (result === "3/1") {
+                    values2 = ["3/1", "3/1", "3/1", "3/1", "3/1", "3/1", "1/3", "1/3", "1/3", "1/3", "1/3", "1/3"];
+                    values3 = ["2X/2X", "2X/1.6X", "2X/1.6X", "1.6X/2X", "1.6X/2X", "2.4X/1.6X", "1.6X/2.4X", "2.4X/1.2X", "2.4X/1.2X", "1.2X/2.4X", "1.2X/2.4X", "2.8X/1.2X", "1.2X/2.8X", "2.8X/0.8X", "2.8X/0.8X", "0.8X/2.8X", "0.8X/2.8X", "1X/4X", "5X/1X", "6X/1X", "1X/30X", "40X/1X"];
+                    odd1=["1X/4X", "5X/1X", "6X/1X"];
+                    odd2=[ "1X/30X", "40X/1X"];
+                } else if (result === "4/1") {
+                    values2 = ["4/1", "4/1", "4/1", "4/1", "4/1", "4/1", "1/4", "1/4", "1/4", "1/4", "1/4", "1/4"];
+                    values3 = ["2X/2X", "2X/1.6X", "2X/1.6X", "1.6X/2X", "1.6X/2X", "2.4X/1.6X", "1.6X/2.4X", "2.4X/1.2X", "2.4X/1.2X", "1.2X/2.4X", "1.2X/2.4X", "2.8X/1.2X", "1.2X/2.8X", "2.8X/0.8X", "2.8X/0.8X", "0.8X/2.8X", "0.8X/2.8X", "1X/4X", "5X/1X", "6X/1X", "1X/30X", "40X/1X"];
+                    odd1=["1X/4X", "5X/1X", "6X/1X"];
+                    odd2=[ "1X/30X", "40X/1X"];
+                } else if (result === "3/2") {
+                    values2 = ["3/2", "3/2","3/2","3/2","3/2","3/2","2/3","2/3","2/3","2/3","2/3","2/3"];
+                    values3 = ["2X/2X", "2X/1.6X", "2X/1.6X", "1.6X/2X", "1.6X/2X", "2.4X/1.6X", "1.6X/2.4X", "2.4X/1.2X", "2.4X/1.2X", "1.2X/2.4X", "1.2X/2.4X", "2.8X/1.2X", "1.2X/2.8X", "2.8X/0.8X", "2.8X/0.8X", "0.8X/2.8X", "0.8X/2.8X", "1X/4X", "5X/1X", "6X/1X", "1X/30X", "40X/1X"];
+                    odd1=["1X/4X", "5X/1X", "6X/1X"];
+                    odd2=[ "1X/30X", "40X/1X"];
+                } else if (result === "2/4") {
+                    values2 = ["2/4","2/4","2/4","2/4","2/4","2/4","4/2","4/2","4/2","4/2","4/2","4/2"];
+                    values3 = ["2X/2X", "2X/1.6X", "2X/1.6X", "1.6X/2X", "1.6X/2X", "2.4X/1.6X", "1.6X/2.4X", "2.4X/1.2X", "2.4X/1.2X", "1.2X/2.4X", "1.2X/2.4X", "2.8X/1.2X", "1.2X/2.8X", "2.8X/0.8X", "2.8X/0.8X", "0.8X/2.8X", "0.8X/2.8X", "1X/4X", "5X/1X", "6X/1X", "1X/30X", "40X/1X"];
+                    odd1=["1X/4X", "5X/1X", "6X/1X"];
+                    odd2=[ "1X/30X", "40X/1X"];
+                } else if (result === "4/3") {
+                    values2 = ["4/3","4/3","4/3","4/3","4/3","4/3","3/4","3/4","3/4","3/4","3/4","3/4"];
+                    values3 = ["2X/2X", "2X/1.6X", "2X/1.6X", "1.6X/2X", "1.6X/2X", "2.4X/1.6X", "1.6X/2.4X", "2.4X/1.2X", "2.4X/1.2X", "1.2X/2.4X", "1.2X/2.4X", "2.8X/1.2X", "1.2X/2.8X", "2.8X/0.8X", "2.8X/0.8X", "0.8X/2.8X", "0.8X/2.8X", "1X/4X", "5X/1X", "6X/1X", "1X/30X", "40X/1X"];
+                    odd1=["1X/4X", "5X/1X", "6X/1X"];
+                    odd2=[ "1X/30X", "40X/1X"];
+                } else if (result === "1/2/3") {
+                    values2 = ["1/2/3","1/2/3","1/3/2","1/3/2","2/1/3","2/1/3","2/3/1","2/3/1","3/1/2","3/1/2","3/2/1","3/2/1"];
+                    values3 = ["2X/1.2X/0.8X","2X/0.8X/1.2X","1.2X/0.8X/2X","1.2X/2X/0.8X","0.8/1.2X/2X","0.8X/2X/1.2X","1.6X/1.2X/0.8X","1.6X/1.2X/0.8X","1.6X/0.8X/1.2X","1.6X/0.8X/1.2X","1.2X/0.8X/1.6X","1.2X/0.8X/1.6X","1.2X/1.6X/0.8X","1.2X/1.6X/0.8X","0.8X/1.6X/1.2X","0.8X/1.6X/1.2X","0.8X/1.2X/1.6X","0.8X/1.2X/1.6X","2.4X/0.8X/0.8X","0.8X/2.4X/0.8X","0.8X/0.8X/2.4X","1X/1X/4X","1X/5X/1X","6X/1X/1X","1X/10X/1X","1X/1X/30X","40X/1X/1X"];
+                    odd1=["1X/1X/4X","1X/5X/1X","6X/1X/1X"]
+                    odd2=["1X/10X/1X","1X/1X/30X","40X/1X/1X"];
+                } else if (result === "2/1/4") {
+                    values2 = ["2/1/4", "2/1/4", "2/4/1", "2/4/1", "1/2/4", "1/2/4", "1/4/2", "1/4/2", "4/1/2", "4/1/2", "4/2/1", "4/2/1"];
+                    values3 = ["2X/1.2X/0.8X","2X/0.8X/1.2X","1.2X/0.8X/2X","1.2X/2X/0.8X","0.8/1.2X/2X","0.8X/2X/1.2X","1.6X/1.2X/0.8X","1.6X/1.2X/0.8X","1.6X/0.8X/1.2X","1.6X/0.8X/1.2X","1.2X/0.8X/1.6X","1.2X/0.8X/1.6X","1.2X/1.6X/0.8X","1.2X/1.6X/0.8X","0.8X/1.6X/1.2X","0.8X/1.6X/1.2X","0.8X/1.2X/1.6X","0.8X/1.2X/1.6X","2.4X/0.8X/0.8X","0.8X/2.4X/0.8X","0.8X/0.8X/2.4X","1X/1X/4X","1X/5X/1X","6X/1X/1X","1X/10X/1X","1X/1X/30X","40X/1X/1X"];
+                    odd1=["1X/1X/4X","1X/5X/1X","6X/1X/1X"]
+                    odd2=["1X/10X/1X","1X/1X/30X","40X/1X/1X"];
+                } else if (result === "3/4/2") {
+                    values2 = ["3/4/2", "3/4/2", "3/2/4", "3/4/2", "2/3/4", "2/3/4", "2/4/3", "2/4/3", "4/3/2", "4/3/2", "4/2/3", "4/2/3"];
+                    values3 = ["2X/1.2X/0.8X","2X/0.8X/1.2X","1.2X/0.8X/2X","1.2X/2X/0.8X","0.8/1.2X/2X","0.8X/2X/1.2X","1.6X/1.2X/0.8X","1.6X/1.2X/0.8X","1.6X/0.8X/1.2X","1.6X/0.8X/1.2X","1.2X/0.8X/1.6X","1.2X/0.8X/1.6X","1.2X/1.6X/0.8X","1.2X/1.6X/0.8X","0.8X/1.6X/1.2X","0.8X/1.6X/1.2X","0.8X/1.2X/1.6X","0.8X/1.2X/1.6X","2.4X/0.8X/0.8X","0.8X/2.4X/0.8X","0.8X/0.8X/2.4X","1X/1X/4X","1X/5X/1X","6X/1X/1X","1X/10X/1X","1X/1X/30X","40X/1X/1X"];
+                    odd1=["1X/1X/4X","1X/5X/1X","6X/1X/1X"]
+                    odd2=["1X/10X/1X","1X/1X/30X","40X/1X/1X"];
+                } else { // result === "4/1/3"
+                    values2 = ["4/1/3", "4/1/3", "4/3/1", "4/3/1", "3/4/1", "3/4/1", "3/1/4", "3/1/4", "1/3/4", "1/3/4", "1/4/3", "1/4/3"];
+                    values3 = ["2X/1.2X/0.8X","2X/0.8X/1.2X","1.2X/0.8X/2X","1.2X/2X/0.8X","0.8/1.2X/2X","0.8X/2X/1.2X","1.6X/1.2X/0.8X","1.6X/1.2X/0.8X","1.6X/0.8X/1.2X","1.6X/0.8X/1.2X","1.2X/0.8X/1.6X","1.2X/0.8X/1.6X","1.2X/1.6X/0.8X","1.2X/1.6X/0.8X","0.8X/1.6X/1.2X","0.8X/1.6X/1.2X","0.8X/1.2X/1.6X","0.8X/1.2X/1.6X","2.4X/0.8X/0.8X","0.8X/2.4X/0.8X","0.8X/0.8X/2.4X","1X/1X/4X","1X/5X/1X","6X/1X/1X","1X/10X/1X","1X/1X/30X","40X/1X/1X"];
+                    odd1=["1X/1X/4X","1X/5X/1X","6X/1X/1X"]
+                    odd2=["1X/10X/1X","1X/1X/30X","40X/1X/1X"];
+                }
+                values[1] = values2;
+                values[2] = values3;
+                numSectors[1] = values2.length;
+                numSectors[2] = values3.length;
+                popupfunction(result,centersX[0]);
+
+            });
+            }, 1);
+           
+
+            setTimeout(() => {
+            new Promise((resolve, reject) => {
+                rotationSpeeds[1] = 0.1;
+                let lastSector = null; // Keep track of the last sector
+
+                function rotationSpeed() {
+                    rotationSpeeds[1] -= 0.001; // Decrease speed by a smaller amount for smoother transition
+
+                    if (rotationSpeeds[1] < 0) {
+                        rotationSpeeds[1] = 0; // Ensure speed doesn't go below 0
+                    }
+
+                    // Calculate current sector
+                    let currentSector = Math.floor((rotationAngles[1]) / (2 * Math.PI) * numSectors[1]) % numSectors[1];
+
+                    // If the sector has changed, call the function
+                    if (lastSector !== null && currentSector !== lastSector) {
+                        sectorChangeFunction(1); // Replace this with your function
+                    }
+
+                    // Update lastSector
+                    lastSector = currentSector;
+                }
+
+                rotationSpeed();
+
+                let rotationInterval = setInterval(rotationSpeed, 100);
+
+                // Clear the interval after 10 seconds
+                setTimeout(() => {
+                    clearInterval(rotationInterval); // Clear the interval to stop the function
+                    resolve(); // Resolve the promise when the rotation speed is 0
+                }, 10000);
+            }).then(() => {
                 var sector = Math.floor((rotationAngles[1]) / (2 * Math.PI) * numSectors[1]) % numSectors[1];
                 console.log("Fast spin result for Wheel 2: Color: " + colors[1][(numSectors[1] - sector - 1) % numSectors[1]] + ", Value: " + values[1][(numSectors[1] - sector - 1) % numSectors[1]]);
-            }, 20000);
+                var result = values[1][(numSectors[1] - sector - 1) % numSectors[1]];
+                fillTableFromResult(result, 'myTable2', 0);
+                 popupfunction(result,centersX[1]);
+            });
 
-            // After 30 seconds, slow down the third wheel and print its result
-            setTimeout(function () {
-                rotationSpeeds[2] = 0.01;
-                var sector = Math.floor((rotationAngles[2]) / (2 * Math.PI) * numSectors[2]) % numSectors[2];
-                var forbiddenSectors = [0, 2];  // Replace with your own indices
-                while (forbiddenSectors.includes(sector)) {
-                    // If the wheel landed on a forbidden section, increase the rotation angle
-                    // by a small fraction to make it land on the next section
-                    rotationAngles[2] += 0.01;
-                    sector = Math.floor((rotationAngles[2]) / (2 * Math.PI) * numSectors[2]) % numSectors[2];
+        }, 20000);
+
+        setTimeout(() => {
+    new Promise((resolve, reject) => {
+        rotationSpeeds[2] = 0.05;
+        var rotationTime = 10000;  // Set initial rotation time
+        var sector; // Declare sector here
+        let lastSector = null; // Keep track of the last sector
+
+        function rotationSpeed() {
+            rotationSpeeds[2] -= 0.0005; // Decrease speed by a smaller amount for smoother transition
+
+            if (rotationSpeeds[2] < 0) {
+                rotationSpeeds[2] = 0; // Ensure speed doesn't go below 0
+                sector = Math.floor((rotationAngles[2]) / (2 * Math.PI) * numSectors[2]) % numSectors[2];
+                clearInterval(rotationInterval); // Clear the interval to stop the function
+
+                // Check if the landed sector's value matches odd1 or odd2
+                var landedValue = values[2][(numSectors[2] - sector - 1) % numSectors[2]];
+                if (odd1.includes(landedValue) || odd2.includes(landedValue)) {
+                    // If the landed sector's value is in odd1 or odd2, increment the rotation speed slightly
+                    rotationSpeeds[2] += 0.0001;
                 }
-                console.log("Fast spin result for Wheel 3: Color: " + colors[2][(numSectors[2] - sector - 1) % numSectors[2]] + ", Value: " + values[2][(numSectors[2] - sector - 1) % numSectors[2]]);
-            }, 30000);
-    });
+
+                resolve(sector); // Resolve the promise when the rotation speed is 0
+            }
+            
+            // Calculate current sector
+            let currentSector = Math.floor((rotationAngles[2]) / (2 * Math.PI) * numSectors[2]) % numSectors[2];
+
+            // If the sector has changed, call the function
+            if (lastSector !== null && currentSector !== lastSector) {
+                sectorChangeFunction(2); // Replace this with your function
+            }
+
+            // Update lastSector
+            lastSector = currentSector;
+        }
+
+        rotationSpeed();
+
+        let rotationInterval = setInterval(rotationSpeed, 100);
+
+        // Clear the interval after rotationTime
+        setTimeout(() => {
+            clearInterval(rotationInterval); // Clear the interval to stop the function
+            resolve(sector); // Resolve the promise when the rotation speed is 0
+        }, rotationTime);
+        }).then((sector) => {
+                // Check if the landed sector's value matches odd1 or odd2
+            
+                // Continue with the existing code for displaying results and handling the popup
+                console.log("List of sectors with their numbers and values after the spin:");
+                for (var i = 0; i < numSectors[2]; i++) {
+                    console.log("Sector " + i + ": " + values[2][i]);
+                }
+
+                // Display the non-forbidden sector value the wheel landed in
+                console.log("Non-forbidden sector value the wheel landed in: " + values[2][sector]);
+
+                var result1 = "Fast spin result for Wheel 3: Color: " + colors[2][(numSectors[2] - sector - 1) % numSectors[2]] + ", Value: " + values[2][(numSectors[2] - sector - 1) % numSectors[2]];
+                console.log(result1);
+                rotationSpeeds[2] = 0;
+                var result2 = values[2][(numSectors[2] - sector - 1) % numSectors[2]];
+                fillTableFromResult(result2, 'myTable2', 1);
+                fillTableFromResult(result2, 'myTable2', 2);
+                let a = new Audio('cheer.mp3'); // Replace 'soundfile.mp3' with the path to your sound file
+                a.play();
+                popupfunction(result2,centersX[2]);
+                // rotationSpeeds=[0.01,0.01,0.01];
+                checkSession = setInterval(checkSessionStatus, 1000);
+            });
+        }, 40000);
+         };
 </script>
 </body>
 
