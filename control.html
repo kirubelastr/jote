@@ -2,8 +2,9 @@
 <html>
 <head>
     <title>Game Page</title>
-    <script src="./jquery.min.js"></script>
+    <!-- <script src="./jquery.min.js"></script> -->
     <script src="./JsBarcode.all.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 
     <style>
         body{
@@ -14,7 +15,7 @@
         /* Add styles for the left container */
         #left-container {
             float: left;
-            width: 34%;
+            width: 38%;
             background-color: #f2f2f2; /* Adjust the color as needed */
             padding: 40px;
         }
@@ -22,12 +23,12 @@
         /* Add styles for the right container */
         #right-container {
             float: right;
-            width: 40%;
+            width: 54%;
             background-color: #e6e6e6; /* Adjust the color as needed */
             padding: 20px;
         }
         button {
-            background-color: #3c543d;
+            background-color: #3a9b3e;
             border: none;
             color: white;
             padding: 15px 32px;
@@ -37,7 +38,11 @@
             font-size: 16px;
             margin: 4px 10px;
             cursor: pointer;
-            transition: background-color 0.3s; /* Add transition for color change */
+            transition: background-color 0.3s, transform 0.3s; /* Add transition for color change and transform */
+        }
+
+        button:hover {
+            transform: scale(0.95); /* Add a slight scale effect on button press */
         }
 
         button.selected {
@@ -51,7 +56,7 @@
             cursor: not-allowed;
         }
         button.last {
-            background-color: rgb(54, 182, 167);
+            background-color: rgb(98, 135, 131);
         }
         #table {
             width: 100%;
@@ -276,6 +281,7 @@
                 for (var i = 0; i < printedPlayers.length; i++) {
                     console.log(printedPlayers[i]);
                 }
+                checkArrayAndEnableButton();
             } else {
                 if (betAmount !== null) {
                     button.disabled = false;
@@ -295,8 +301,9 @@
                 for (var i = 0; i < printedPlayers.length; i++) {
                     console.log(printedPlayers[i]);
                 }
+                checkArrayAndEnableButton();
             }
-            checkArrayAndEnableButton();
+           
         }
 
         var selectedPlayer = null;
@@ -338,18 +345,48 @@
                 console.log('All conditions met. Enabling the "Set Bet and Spin" button.');
                 document.getElementById('setBetAndSpin').disabled = false; // Enable the "Set Bet and Spin" button
                 document.getElementById('setBetAndSpin').style.background = 'orange'; // Change the background color to bright orange
-                 resetAllvariables();
+                 
             } else {
                 console.log('Not all conditions met. Disabling the "Set Bet and Spin" button.');
                 document.getElementById('setBetAndSpin').disabled = true; // Disable the "Set Bet and Spin" button
+                  // Restore the previous background color
+                document.getElementById('setBetAndSpin').style.background ='#3a9b3e';
             }
 
             console.log('After checking conditions');
         }
+        function resetAllVariables() {
+            // Reset printedPlayers array
+            printedPlayers = [];
 
-        function resetAllvariables(){
+            // Reset selectedPlayer and betAmount
+            selectedPlayer = null;
+            betAmount = null;
 
+            // Reset toggle buttons, player buttons, and print buttons
+            for (let i = 1; i <= 4; i++) {
+                let toggleButton = document.getElementById('toggle' + i);
+                let playerButton = document.getElementById('player' + i);
+                let printButton = document.getElementById('printButton' + i);
+                
+                if (toggleButton && playerButton && printButton) {
+                    toggleButton.checked = false;
+                    toggleButton.disabled=false;
+                    playerButton.disabled = true;
+                    printButton.disabled = true;
+                    printButton.classList.remove('disabled', 'selected', 'printed','last');
+                    playerButton.classList.remove('disabled', 'selected', 'printed','last');
+                }
+            }
+
+            // Reset bet dropdown options
+            generateOptions();
+            document.getElementById('bet').disabled=false;
+            // Reset the "Set Bet and Spin" button
+            document.getElementById('setBetAndSpin').disabled = true;
+            document.getElementById('setBetAndSpin').style.background = '';
         }
+
         function setPlayer(player) {
             selectedPlayer = player;
             updateButtonColors();
@@ -379,12 +416,10 @@
                     playerButton.style.color = 'black'; // Set text color to black
                 }
             }
-
-            // Change button color to red if the receipt is printed
             printedPlayers.forEach(function (playerNumber) {
-                const playerButton = document.getElementById('player'+playerNumber);
-                const printButton = document.getElementById('printButton'+playerNumber);
-                const toggleButton = document.getElementById('toggle'+playerNumber);
+                const playerButton = document.getElementById('player' + playerNumber);
+                const printButton = document.getElementById('printButton' + playerNumber);
+                const toggleButton = document.getElementById('toggle' + playerNumber);
                 const betButton = document.getElementById('bet');
                 betButton.disabled = true;
                 if (playerButton && printButton && toggleButton) {
@@ -397,14 +432,11 @@
                     toggleButton.disabled = true;
                 }
             });
-
         }
-
-
-
 
         generateOptions();
         function initiateSpinFast() {
+            checkArrayAndEnableButton();
             console.log("initiate function called");
 
             // Set the session and send the bet amount here
@@ -418,6 +450,32 @@
                     if (jsonResponse.status === "success") {
                         console.log(jsonResponse.message);
                         console.log("Session value: " + jsonResponse.sessionValue);
+
+                        // Change button color to the 'button.last' style
+                        for (let playerNumber = 1; playerNumber <= 4; playerNumber++) {
+                            const playerButton = document.getElementById('player' + playerNumber);
+                            const printButton = document.getElementById('printButton' + playerNumber);
+                            if (playerButton) {
+                                playerButton.classList.remove('selected');
+                                playerButton.classList.add('last'); // Add 'last' class for the desired color
+                                printButton.classList.remove('selected');
+                                printButton.classList.add('last');
+                                document.getElementById('setBetAndSpin').style.background = 'rgb(98, 135, 131)';
+                            }
+                        }
+                        
+                        // Disable all buttons, toggles, and the select
+                        for (let playerNumber = 1; playerNumber <= 4; playerNumber++) {
+                            const playerButton = document.getElementById('player' + playerNumber);
+                            const printButton = document.getElementById('printButton' + playerNumber);
+                            const toggleButton = document.getElementById('toggle' + playerNumber);
+                            if (playerButton && printButton && toggleButton) {
+                                playerButton.disabled = true;
+                                printButton.disabled = true;
+                                toggleButton.disabled = true;
+                            }
+                        }
+                        document.getElementById('setBetAndSpin').disabled = true;
                     } else {
                         console.log("Failed to set session");
                     }
@@ -426,9 +484,14 @@
                     console.log("Error: ", error);
                 }
             });
+
+            setTimeout(function () {
+                resetAllVariables();
+            }, 30000);
         }
+
         function printReceipt(playerNumber) {
-            checkArrayAndEnableButton();
+            
             const receipt = `Player ${playerNumber}, Bet Amount: ${betAmount}, Date and Time: ${new Date()}`;
             console.log(receipt);
             printedPlayers.forEach(function(playerNumber) {
@@ -471,8 +534,7 @@
             printButton.disabled = true;
             button.style.backgroundColor = "burgundy";
             printButton.style.backgroundColor = "burgundy";
-
-            // Call updateButtonColors function
+            checkArrayAndEnableButton();
             updateButtonColors();
         }
 

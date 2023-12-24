@@ -8,14 +8,23 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <style>
-        /* Set the background color and remove margins */
-        body {
-            background-image: url("bg.png");
-            background-size: cover;
-            background-color: rgb(255, 255, 255);
-            margin: 0; 
-            overflow: hidden;
-        }
+body {
+    margin: 0;
+    overflow: hidden;
+    height: 100vh;
+    background: radial-gradient(circle at center, #730000, #ff0000);
+    background-size: 200% 200%;
+    animation: gradient 10s ease infinite;
+    position: relative;
+}
+
+@keyframes gradient {
+    0%   {background-position: 100% 0;}
+    50%  {background-position: 0 100%;}
+    100% {background-position: 100% 0;}
+}
+
+
         #ticket{
             position: absolute;
             top: 5px;
@@ -100,7 +109,7 @@
         #popup {
             display: none;
             position: fixed;
-            top: 50%;
+            top: 85%;
             left: 50%;
             transform: translate(-50%, -50%);
             min-width: 200px; /* Set a minimum width for the popup */
@@ -255,6 +264,7 @@
         var canvas = document.getElementById("myCanvas");
         var ctx = canvas.getContext("2d");
         let audio = new Audio('tick.mp3');
+        let a = new Audio('cheer.mp3');
         // Define the centers and radii of the wheels
         var centersX = [canvas.width / 6, 5 * canvas.width / 6, canvas.width / 2];
         var centerY = canvas.height / 2;
@@ -302,19 +312,23 @@
             ctx.restore();
         }
 
-        // Function to draw a sector of a wheel
         function drawSector(centerX, startAngle, endAngle, color, value, radius) {
             ctx.beginPath();
             ctx.moveTo(centerX, centerY);
             ctx.arc(centerX, centerY, radius, startAngle, endAngle);
-            ctx.closePath()
-                  
+            ctx.closePath();
+
+            // Create a radial gradient
+            var gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius/1.5);
+            gradient.addColorStop(0, 'rgba(255, 255, 255, 1)'); // Intense white color at the center
+            gradient.addColorStop(1, color); // Original color at the edge
+
             // Add a shadow effect
             ctx.shadowOffsetX = 5;
             ctx.shadowOffsetY = 5;
             ctx.shadowBlur = 5;
             ctx.shadowColor = "rgba(0, 0, 0, 0.5)";
-            ctx.fillStyle = color;
+            ctx.fillStyle = gradient;
             ctx.fill();
             // Reset shadow parameters
             ctx.shadowOffsetX = 0;
@@ -335,11 +349,15 @@
             ctx.fillText(value, radius / 1.4, 2);
             ctx.restore(); 
         }
+
         function drawcentercircle(centerX, centerY, radius){
+            
             var circleRadius = radius / 3;
+
+            // Draw the original circle
             ctx.beginPath();
             ctx.arc(centerX, centerY, circleRadius, 0, 2 * Math.PI); // Draws a full circle at the given center with radius 40
-            ctx.fillStyle = "rgba(255, 255, 0, 1)";  // Solid color
+            ctx.fillStyle = "rgba(255, 255, 0, 1)";  // Solid color for the original circle
             ctx.fill();
 
             // Calculate font size based on circle radius
@@ -440,7 +458,7 @@
         // Define the rotation speeds and angles for each wheel
         var rotationSpeeds = [0.01, 0.01, 0.01];
         var rotationAngles = [0, 0, 0];
-        var colorssector = ["red", "white"];
+        var colorssector = ["#FF0000", "white"];
 
         function getColorForSector(sectorNumber, wheelNumber) {
             if (wheelNumber == 2) {  // Apply specific colors only to the third wheel
@@ -491,6 +509,7 @@
       var checkSession; // Declare the variable outside the function
 
         function checkSessionStatus() {
+            winningsArray = [];  
             console.log("Checking for session..."); // Logs "Checking for session..."
 
             // Use AJAX to check the session status on the server
@@ -530,7 +549,7 @@
             function updateticket(ticketnumber) {
                 document.getElementById("ticket").innerHTML = " # "+ticketnumber;  // Use the formatTime function to format the timer
             }
-            var winningsArray = [];
+            var winningsArray = [];  
 
         function sendtableresult(){
             console.log(winningsArray);
@@ -625,7 +644,6 @@
                 var popupDiv = document.getElementById('popup');
                 popupDiv.innerHTML = "<p>" + result + "</p>";
                 popupDiv.style.display = 'block';
-                popupDiv.style.left = centerX + 'px';  // Set the horizontal position of the popup
                if(centerX === canvas.width / 2) {
                 confetti({ particleCount: 5000, spread: 100000, target: 'popup' });  // Display more confetti in the popup div
                             
@@ -637,11 +655,13 @@
                     setTimeout(function () {
                         popupDiv.style.display = 'none';
                         popupDiv.classList.remove('fadeOut');
-                        if(result === "result2"){
+                        if(centerX === canvas.width / 2){
                            // Stop the sound effect when the popup disappears
                             a.pause();
                             a.currentTime = 0;
-                        }
+                            rotationSpeeds = [0.01, 0.01, 0.01];
+                            checkSession = setInterval(checkSessionStatus, 1000); // Then set the interval
+                            }
                     }, 1000);
                 }, 10000);
             }
@@ -717,6 +737,7 @@
                     resolve(); // Resolve the promise when the rotation speed is 0
                 }, 10000);
                }).then(() => {
+                rotationSpeeds[0] = 0; 
                 var sector = Math.floor((rotationAngles[0]) / (2 * Math.PI) * numSectors[0]) % numSectors[0];
                 console.log("Fast spin result for Wheel 1: Color: " + colors[0][(numSectors[0] - sector - 1) % numSectors[0]] + ", Value: " + values[0][(numSectors[0] - sector - 1) % numSectors[0]]);
                 var values2, values3;
@@ -779,11 +800,8 @@
                 numSectors[1] = values2.length;
                 numSectors[2] = values3.length;
                 popupfunction(result,centersX[0]);
-
             });
             }, 1);
-           
-
             setTimeout(() => {
             new Promise((resolve, reject) => {
                 rotationSpeeds[1] = 0.1;
@@ -891,11 +909,9 @@
                 var result2 = values[2][(numSectors[2] - sector - 1) % numSectors[2]];
                 fillTableFromResult(result2, 'myTable2', 1);
                 fillTableFromResult(result2, 'myTable2', 2);
-                let a = new Audio('cheer.mp3'); // Replace 'soundfile.mp3' with the path to your sound file
                 a.play();
                 popupfunction(result2,centersX[2]);
-                // rotationSpeeds=[0.01,0.01,0.01];
-                checkSession = setInterval(checkSessionStatus, 1000);
+                
             });
         }, 40000);
          };
