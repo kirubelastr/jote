@@ -462,9 +462,13 @@ body {
 
         function getColorForSector(sectorNumber, wheelNumber) {
             if (wheelNumber == 2) {  // Apply specific colors only to the third wheel
-                if (sectorNumber == 2) {
+                if (sectorNumber == 0) {
                     return "blue";  // color the third sector blue
-                } else if (sectorNumber == 4) {
+                } else if (sectorNumber == 5) {
+                    return "green";  // color the fifth sector green
+                } else if (sectorNumber == 11) {
+                    return "green";  // color the fifth sector green
+                } else if (sectorNumber == 16) {
                     return "green";  // color the fifth sector green
                 }
             }
@@ -583,12 +587,22 @@ body {
                 if (tableId === "myTable" && column === 1) {
                     var status = numbers.includes(i.toString());
                     cells[column].innerText = status ? i : '';
-                    cells[column].style.backgroundColor = status ? 'green' : 'red';
-                    if (!status) {
+                    cells[column].innerText = status ? '✓' : 'X'; // Display a 
+                    cells[column].style.backgroundColor = status ? 'green' : '';
+                    if (status) {
+                        cells[column].style.color = 'lime'; // Make the tick mark green and bright
+                        cells[column].style.backgroundColor = ''; // Reset the background color
+                    } else {
+                        cells[column].style.color = 'red'; // Make the 'X' mark red
                         for (var j = 1; j < cells.length; j++) {
-                            cells[j].style.backgroundColor = 'red';
+                            cells[j].innerText = 'X'; // Display 'X' for false
                         }
                     }
+                    // if (!status) {
+                    //     for (var j = 1; j < cells.length; j++) {
+                    //         cells[j].innerText = 'X'; // Display 'X' for false 
+                    //     }
+                    // }
                 } else if (tableId === "myTable2") {
                     if (column === 0) {
                         cells[column].innerText = numbers[i-1] ? 'Player ' + numbers[i-1] : '';
@@ -745,33 +759,37 @@ body {
 
                 fillTableFromResult(result, 'myTable', 1);
                 if (result === "1/2") {
-                    values2 = ["1/2", "1/2", "1/2", "1/2", "1/2", "1/2", "2/1", "2/1", "2/1", "2/1", "2/1", "2/1"];
-                    values3 = ["2X/2X", "2X/1.6X", "2X/1.6X", "1.6X/2X", "1.6X/2X", "2.4X/1.6X", "1.6X/2.4X", "2.4X/1.2X", "2.4X/1.2X", "1.2X/2.4X", "1.2X/2.4X", "2.8X/1.2X", "1.2X/2.8X", "2.8X/0.8X", "2.8X/0.8X", "0.8X/2.8X", "0.8X/2.8X", "1X/4X", "5X/1X", "6X/1X", "1X/30X", "40X/1X"];
+                    values2 = ["1/2", "2/1","1/2", "2/1","1/2", "2/1","1/2", "2/1","1/2", "2/1","1/2", "2/1"];
+                    values3 = ["5X/1X","2X/2X", "2X/1.6X", "2X/1.6X", "1.6X/2X",  "1X/4X","1.6X/2X", "2.4X/1.6X", "1.6X/2.4X", "2.4X/1.2X", "2.4X/1.2X", 
+                            "1.2X/2.4X", "1X/30X", "1.2X/2.4X", "2.8X/1.2X", "1.2X/2.8X", "2.8X/0.8X", "40X/1X", "2.8X/0.8X", "0.8X/2.8X", "0.8X/2.8X",  "6X/1X"];
                     odd1=["1X/4X", "5X/1X", "6X/1X"];
                     odd2=[ "1X/30X", "40X/1X"];
                 } else if (result === "3/1") {
                     values2 = ["3/1", "3/1", "3/1", "3/1", "3/1", "3/1", "1/3", "1/3", "1/3", "1/3", "1/3", "1/3"];
-                    values3 = ["2X/2X", "2X/1.6X", "2X/1.6X", "1.6X/2X", "1.6X/2X", "2.4X/1.6X", "1.6X/2.4X", "2.4X/1.2X", "2.4X/1.2X", "1.2X/2.4X", "1.2X/2.4X", "2.8X/1.2X", "1.2X/2.8X", "2.8X/0.8X", "2.8X/0.8X", "0.8X/2.8X", "0.8X/2.8X", "1X/4X", "5X/1X", "6X/1X", "1X/30X", "40X/1X"];
-                    odd1=["1X/4X", "5X/1X", "6X/1X"];
+                    values3 = ["5X/1X","2X/2X", "2X/1.6X", "2X/1.6X", "1.6X/2X",  "1X/4X","1.6X/2X", "2.4X/1.6X", "1.6X/2.4X", "2.4X/1.2X", "2.4X/1.2X", 
+                            "1.2X/2.4X", "1X/30X", "1.2X/2.4X", "2.8X/1.2X", "1.2X/2.8X", "2.8X/0.8X", "40X/1X", "2.8X/0.8X", "0.8X/2.8X", "0.8X/2.8X",  "6X/1X"];odd1=["1X/4X", "5X/1X", "6X/1X"];
                     odd2=[ "1X/30X", "40X/1X"];
                 } else if (result === "4/1") {
                     values2 = ["4/1", "4/1", "4/1", "4/1", "4/1", "4/1", "1/4", "1/4", "1/4", "1/4", "1/4", "1/4"];
-                    values3 = ["2X/2X", "2X/1.6X", "2X/1.6X", "1.6X/2X", "1.6X/2X", "2.4X/1.6X", "1.6X/2.4X", "2.4X/1.2X", "2.4X/1.2X", "1.2X/2.4X", "1.2X/2.4X", "2.8X/1.2X", "1.2X/2.8X", "2.8X/0.8X", "2.8X/0.8X", "0.8X/2.8X", "0.8X/2.8X", "1X/4X", "5X/1X", "6X/1X", "1X/30X", "40X/1X"];
-                    odd1=["1X/4X", "5X/1X", "6X/1X"];
+                    values3 = ["5X/1X","2X/2X", "2X/1.6X", "2X/1.6X", "1.6X/2X",  "1X/4X","1.6X/2X", "2.4X/1.6X", "1.6X/2.4X", "2.4X/1.2X", "2.4X/1.2X", 
+                            "1.2X/2.4X", "1X/30X", "1.2X/2.4X", "2.8X/1.2X", "1.2X/2.8X", "2.8X/0.8X", "40X/1X", "2.8X/0.8X", "0.8X/2.8X", "0.8X/2.8X",  "6X/1X"];odd1=["1X/4X", "5X/1X", "6X/1X"];
                     odd2=[ "1X/30X", "40X/1X"];
                 } else if (result === "3/2") {
                     values2 = ["3/2", "3/2","3/2","3/2","3/2","3/2","2/3","2/3","2/3","2/3","2/3","2/3"];
-                    values3 = ["2X/2X", "2X/1.6X", "2X/1.6X", "1.6X/2X", "1.6X/2X", "2.4X/1.6X", "1.6X/2.4X", "2.4X/1.2X", "2.4X/1.2X", "1.2X/2.4X", "1.2X/2.4X", "2.8X/1.2X", "1.2X/2.8X", "2.8X/0.8X", "2.8X/0.8X", "0.8X/2.8X", "0.8X/2.8X", "1X/4X", "5X/1X", "6X/1X", "1X/30X", "40X/1X"];
+                    values3 = ["5X/1X","2X/2X", "2X/1.6X", "2X/1.6X", "1.6X/2X",  "1X/4X","1.6X/2X", "2.4X/1.6X", "1.6X/2.4X", "2.4X/1.2X", "2.4X/1.2X", 
+                            "1.2X/2.4X", "1X/30X", "1.2X/2.4X", "2.8X/1.2X", "1.2X/2.8X", "2.8X/0.8X", "40X/1X", "2.8X/0.8X", "0.8X/2.8X", "0.8X/2.8X",  "6X/1X"];
                     odd1=["1X/4X", "5X/1X", "6X/1X"];
                     odd2=[ "1X/30X", "40X/1X"];
                 } else if (result === "2/4") {
                     values2 = ["2/4","2/4","2/4","2/4","2/4","2/4","4/2","4/2","4/2","4/2","4/2","4/2"];
-                    values3 = ["2X/2X", "2X/1.6X", "2X/1.6X", "1.6X/2X", "1.6X/2X", "2.4X/1.6X", "1.6X/2.4X", "2.4X/1.2X", "2.4X/1.2X", "1.2X/2.4X", "1.2X/2.4X", "2.8X/1.2X", "1.2X/2.8X", "2.8X/0.8X", "2.8X/0.8X", "0.8X/2.8X", "0.8X/2.8X", "1X/4X", "5X/1X", "6X/1X", "1X/30X", "40X/1X"];
+                    values3 = ["5X/1X","2X/2X", "2X/1.6X", "2X/1.6X", "1.6X/2X",  "1X/4X","1.6X/2X", "2.4X/1.6X", "1.6X/2.4X", "2.4X/1.2X", "2.4X/1.2X", 
+                            "1.2X/2.4X", "1X/30X", "1.2X/2.4X", "2.8X/1.2X", "1.2X/2.8X", "2.8X/0.8X", "40X/1X", "2.8X/0.8X", "0.8X/2.8X", "0.8X/2.8X",  "6X/1X"]; 
                     odd1=["1X/4X", "5X/1X", "6X/1X"];
                     odd2=[ "1X/30X", "40X/1X"];
                 } else if (result === "4/3") {
                     values2 = ["4/3","4/3","4/3","4/3","4/3","4/3","3/4","3/4","3/4","3/4","3/4","3/4"];
-                    values3 = ["2X/2X", "2X/1.6X", "2X/1.6X", "1.6X/2X", "1.6X/2X", "2.4X/1.6X", "1.6X/2.4X", "2.4X/1.2X", "2.4X/1.2X", "1.2X/2.4X", "1.2X/2.4X", "2.8X/1.2X", "1.2X/2.8X", "2.8X/0.8X", "2.8X/0.8X", "0.8X/2.8X", "0.8X/2.8X", "1X/4X", "5X/1X", "6X/1X", "1X/30X", "40X/1X"];
+                    values3 = ["5X/1X","2X/2X", "2X/1.6X", "2X/1.6X", "1.6X/2X",  "1X/4X","1.6X/2X", "2.4X/1.6X", "1.6X/2.4X", "2.4X/1.2X", "2.4X/1.2X", 
+                            "1.2X/2.4X", "1X/30X", "1.2X/2.4X", "2.8X/1.2X", "1.2X/2.8X", "2.8X/0.8X", "40X/1X", "2.8X/0.8X", "0.8X/2.8X", "0.8X/2.8X",  "6X/1X"];  
                     odd1=["1X/4X", "5X/1X", "6X/1X"];
                     odd2=[ "1X/30X", "40X/1X"];
                 } else if (result === "1/2/3") {
@@ -865,9 +883,11 @@ body {
                 if (odd1.includes(landedValue) || odd2.includes(landedValue)) {
                     // If the landed sector's value is in odd1 or odd2, increment the rotation speed slightly
                     rotationSpeeds[2] += 0.0001;
+                    // Restart the rotation
+                    rotationInterval = setInterval(rotationSpeed, 100);
+                } else {
+                    resolve(sector); // Resolve the promise when the rotation speed is 0
                 }
-
-                resolve(sector); // Resolve the promise when the rotation speed is 0
             }
             
             // Calculate current sector
@@ -891,7 +911,7 @@ body {
             clearInterval(rotationInterval); // Clear the interval to stop the function
             resolve(sector); // Resolve the promise when the rotation speed is 0
         }, rotationTime);
-        }).then((sector) => {
+    }).then((sector) => {
                 // Check if the landed sector's value matches odd1 or odd2
             
                 // Continue with the existing code for displaying results and handling the popup

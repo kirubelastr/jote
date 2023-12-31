@@ -261,50 +261,84 @@
             xhttp.open("GET", "system.php?search=" + encodeURIComponent(searchValue));
             xhttp.send();
         });
+        var togglesOn = 0; // Global variable to keep track of the number of toggles that are on
 
-        function toggleButton(player) {
-            var toggle = document.getElementById('toggle'+player);
-            var button = document.getElementById('player'+player);
-            var printButton = document.getElementById('printButton'+player); // Fix ID here
-            
-            if (toggle.checked) {
-                button.disabled = true;
-                printButton.disabled = true;
-                button.classList.add('disabled'); // Use classList to add the 'disabled' class
-                printButton.classList.add('disabled'); // Use classList to add the 'disabled' class
-                console.log('Before add:');
-                for (var i = 0; i < printedPlayers.length; i++) {
-                    console.log(printedPlayers[i]);
-                }
-                printedPlayers.push(player);
-                console.log('After add:');
-                for (var i = 0; i < printedPlayers.length; i++) {
-                    console.log(printedPlayers[i]);
-                }
-                checkArrayAndEnableButton();
-            } else {
-                if (betAmount !== null) {
-                    button.disabled = false;
-                    printButton.disabled = false;
-                }
-                button.classList.remove('disabled'); // Use classList to remove the 'disabled' class
-                printButton.classList.remove('disabled'); // Use classList to remove the 'disabled' class
-                var index = printedPlayers.indexOf(player);
-                console.log('Before remove:');
-                for (var i = 0; i < printedPlayers.length; i++) {
-                    console.log(printedPlayers[i]);
-                }
-                if (index !== -1) {
-                    printedPlayers.splice(index, 1);
-                }
-                console.log('After remove:');
-                for (var i = 0; i < printedPlayers.length; i++) {
-                    console.log(printedPlayers[i]);
-                }
-                checkArrayAndEnableButton();
+function checkArrayAndEnableButton() {
+    var betAmount = document.getElementById('bet').value;
+    var toggle1 = document.getElementById('toggle1').checked;
+    var toggle2 = document.getElementById('toggle2').checked;
+    var toggle3 = document.getElementById('toggle3').checked;
+    var toggle4 = document.getElementById('toggle4').checked;
+
+    var toggleCount = [toggle1, toggle2, toggle3, toggle4].filter(Boolean).length; // Count the number of toggles that are on
+
+    console.log('Before checking conditions');
+    console.log('Number of toggles on:', toggleCount);
+    console.log('Number of printed players:', printedPlayers.length);
+    console.log('Bet amount:', betAmount);
+
+    if (betAmount !== null && printedPlayers.length === 4 && toggleCount <= 2) {
+        console.log('All conditions met. Enabling the "Set Bet and Spin" button.');
+        document.getElementById('setBetAndSpin').disabled = false; // Enable the "Set Bet and Spin" button
+        document.getElementById('setBetAndSpin').style.background = 'orange'; // Change the background color to bright orange
+    } else {
+        console.log('Not all conditions met. Disabling the "Set Bet and Spin" button.');
+        document.getElementById('setBetAndSpin').disabled = true; // Disable the "Set Bet and Spin" button
+        document.getElementById('setBetAndSpin').style.background ='#3a9b3e'; // Restore the previous background color
+    }
+
+    console.log('After checking conditions');
+}
+
+function toggleButton(player) {
+    var toggle = document.getElementById('toggle'+player);
+    var button = document.getElementById('player'+player);
+    var printButton = document.getElementById('printButton'+player); // Fix ID here
+
+    if (toggle.checked) {
+        if (togglesOn < 2) { // Only allow the toggle to be turned on if there are less than 2 toggles already on
+            togglesOn++;
+            button.disabled = true;
+            printButton.disabled = true;
+            button.classList.add('disabled'); // Use classList to add the 'disabled' class
+            printButton.classList.add('disabled'); // Use classList to add the 'disabled' class
+            console.log('Before add:');
+            for (var i = 0; i < printedPlayers.length; i++) {
+                console.log(printedPlayers[i]);
             }
-           
+            printedPlayers.push(player);
+            console.log('After add:');
+            for (var i = 0; i < printedPlayers.length; i++) {
+                console.log(printedPlayers[i]);
+            }
+            checkArrayAndEnableButton();
+        } else {
+            toggle.checked = false; // Prevent the toggle from being turned on
         }
+    } else {
+        togglesOn--;
+        if (betAmount !== null) {
+            button.disabled = false;
+            printButton.disabled = false;
+        }
+        button.classList.remove('disabled'); // Use classList to remove the 'disabled' class
+        printButton.classList.remove('disabled'); // Use classList to remove the 'disabled' class
+        var index = printedPlayers.indexOf(player);
+        console.log('Before remove:');
+        for (var i = 0; i < printedPlayers.length; i++) {
+            console.log(printedPlayers[i]);
+        }
+        if (index !== -1) {
+            printedPlayers.splice(index, 1);
+        }
+        console.log('After remove:');
+        for (var i = 0; i < printedPlayers.length; i++) {
+            console.log(printedPlayers[i]);
+        }
+        checkArrayAndEnableButton();
+    }
+}
+
 
         var selectedPlayer = null;
         var betAmount = null;
@@ -335,13 +369,13 @@
             var toggle4 = document.getElementById('toggle4').checked;
 
             var allTogglesOn = toggle1 && toggle2 && toggle3 && toggle4; // Check if all toggles are on
-
+            var toggleCount = [toggle1, toggle2, toggle3, toggle4].filter(Boolean).length; // Count the number of toggles that are on
             console.log('Before checking conditions');
             console.log('All toggles on:', allTogglesOn);
             console.log('Number of printed players:', printedPlayers.length);
             console.log('Bet amount:', betAmount);
 
-            if (betAmount !== null && printedPlayers.length === 4 && !allTogglesOn) {
+            if (betAmount !== null && printedPlayers.length === 4 && !allTogglesOn && toggleCount <= 2) {
                 console.log('All conditions met. Enabling the "Set Bet and Spin" button.');
                 document.getElementById('setBetAndSpin').disabled = false; // Enable the "Set Bet and Spin" button
                 document.getElementById('setBetAndSpin').style.background = 'orange'; // Change the background color to bright orange
@@ -351,6 +385,10 @@
                 document.getElementById('setBetAndSpin').disabled = true; // Disable the "Set Bet and Spin" button
                   // Restore the previous background color
                 document.getElementById('setBetAndSpin').style.background ='#3a9b3e';
+                for (let i = 1; i <= 4; i++) {
+                    let toggleButton = document.getElementById('toggle' + i);
+                    toggleButton.disabled=false;
+                }
             }
 
             console.log('After checking conditions');
@@ -476,6 +514,7 @@
                             }
                         }
                         document.getElementById('setBetAndSpin').disabled = true;
+                        togglesOn=0;
                     } else {
                         console.log("Failed to set session");
                     }
